@@ -16,6 +16,16 @@ export default function Home() {
     setTasks([...tasks, newTask]);
   };
 
+  const handleToggleComplete = (id: string) => {
+    setTasks(tasks.map(task =>
+      task.id === id ? { ...task, completed: !task.completed } : task
+    ));
+  };
+
+  const handleDeleteTask = (id: string) => {
+    setTasks(tasks.filter(task => task.id !== id));
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 py-12 px-4">
       <main className="max-w-2xl mx-auto">
@@ -25,7 +35,11 @@ export default function Home() {
 
         <div className="flex flex-col items-center gap-8">
           <TaskInput onAddTask={handleAddTask} />
-          <TaskList tasks={tasks} />
+          <TaskList
+            tasks={tasks}
+            onToggleComplete={handleToggleComplete}
+            onDeleteTask={handleDeleteTask}
+          />
         </div>
 
         <p className="text-center text-sm text-gray-400 mt-12">

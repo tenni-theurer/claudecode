@@ -3,3 +3,21 @@
 
 # Claude Code
 .claude/
+
+# Environment & credentials
+.env
+credentials.json
+token.pickle
+
+# Logs
+*.log
+
+# Python
+__pycache__/
+*.pyc
+
+# Project outputs
+projects/whatsthepoint/tour-checker/screenshots/
+projects/whatsthepoint/tour-checker/results.json
+projects/whatsthepoint/tour-checker/summary.txt
+projects/aughthour/output/

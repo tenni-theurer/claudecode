@@ -1,0 +1,14 @@
+# OS
+.DS_Store
+
+# Environment & credentials
+.env
+credentials.json
+token.pickle
+
+# Output
+output/
+
+# Python
+__pycache__/
+*.pyc

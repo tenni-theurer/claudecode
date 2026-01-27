@@ -20,4 +20,9 @@ __pycache__/
 projects/whatsthepoint/tour-checker/screenshots/
 projects/whatsthepoint/tour-checker/results.json
 projects/whatsthepoint/tour-checker/summary.txt
-projects/aughthour/output/
+
+# Private projects (not public)
+projects/aughthour/
+
+# Private documentation (full version stays local)
+README.md

@@ -1,0 +1,28 @@
+# Forward Alpha - Dependencies
+
+# Financial Data
+yfinance>=0.2.36
+pandas>=2.0.0
+numpy>=1.24.0
+
+# Web Scraping
+requests>=2.31.0
+beautifulsoup4>=4.12.0
+lxml>=5.0.0
+
+# LLM APIs
+anthropic>=0.18.0
+openai>=1.0.0
+google-generativeai>=0.4.0
+
+# Utilities
+python-dotenv>=1.0.0
+rich>=13.0.0
+tenacity>=8.2.0
+diskcache>=5.6.0
+
+# RSS/News
+feedparser>=6.0.0
+
+# Testing
+pytest>=8.0.0

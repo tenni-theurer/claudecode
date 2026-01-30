@@ -1,0 +1,22 @@
+# Environment
+.env
+*.env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+# Cache
+cache/*.json
+
+# Output (keep structure but ignore generated content)
+output/reports/*.json
+output/reports/*.md
+output/images/*.png
+
+# IDE
+.idea/
+.vscode/
+*.swp

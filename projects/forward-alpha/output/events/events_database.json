@@ -1,0 +1,183 @@
+{
+  "updated_at": "2026-01-29T13:54:41.482017",
+  "count": 9,
+  "events": [
+    {
+      "id": "E00001",
+      "category": "macro",
+      "subcategory": "fed_rates",
+      "description": "Fed rate hike cycle",
+      "weight": -0.3,
+      "confidence": 0.7,
+      "tickers": [],
+      "timestamp": "2026-01-29T13:54:41.480798",
+      "source": "seed",
+      "tags": [
+        "fed",
+        "rates",
+        "monetary"
+      ],
+      "predicted_impact": -0.3,
+      "actual_impact": null,
+      "resolved": false
+    },
+    {
+      "id": "E00002",
+      "category": "macro",
+      "subcategory": "fed_rates",
+      "description": "Fed rate cut cycle",
+      "weight": 0.4,
+      "confidence": 0.7,
+      "tickers": [],
+      "timestamp": "2026-01-29T13:54:41.480995",
+      "source": "seed",
+      "tags": [
+        "fed",
+        "rates",
+        "monetary"
+      ],
+      "predicted_impact": 0.4,
+      "actual_impact": null,
+      "resolved": false
+    },
+    {
+      "id": "E00003",
+      "category": "macro",
+      "subcategory": "inflation",
+      "description": "High inflation environment",
+      "weight": -0.2,
+      "confidence": 0.7,
+      "tickers": [],
+      "timestamp": "2026-01-29T13:54:41.481117",
+      "source": "seed",
+      "tags": [
+        "inflation",
+        "cpi"
+      ],
+      "predicted_impact": -0.2,
+      "actual_impact": null,
+      "resolved": false
+    },
+    {
+      "id": "E00004",
+      "category": "macro",
+      "subcategory": "gdp",
+      "description": "Strong GDP growth",
+      "weight": 0.3,
+      "confidence": 0.7,
+      "tickers": [],
+      "timestamp": "2026-01-29T13:54:41.481217",
+      "source": "seed",
+      "tags": [
+        "gdp",
+        "growth"
+      ],
+      "predicted_impact": 0.3,
+      "actual_impact": null,
+      "resolved": false
+    },
+    {
+      "id": "E00005",
+      "category": "macro",
+      "subcategory": "unemployment",
+      "description": "Rising unemployment",
+      "weight": -0.3,
+      "confidence": 0.7,
+      "tickers": [],
+      "timestamp": "2026-01-29T13:54:41.481362",
+      "source": "seed",
+      "tags": [
+        "jobs",
+        "unemployment"
+      ],
+      "predicted_impact": -0.3,
+      "actual_impact": null,
+      "resolved": false
+    },
+    {
+      "id": "E00006",
+      "category": "geopolitical",
+      "subcategory": "trade",
+      "description": "US-China trade tensions",
+      "weight": -0.2,
+      "confidence": 0.7,
+      "tickers": [
+        "NVDA",
+        "AAPL",
+        "TSM"
+      ],
+      "timestamp": "2026-01-29T13:54:41.481496",
+      "source": "seed",
+      "tags": [
+        "china",
+        "tariffs"
+      ],
+      "predicted_impact": -0.2,
+      "actual_impact": null,
+      "resolved": false
+    },
+    {
+      "id": "E00007",
+      "category": "geopolitical",
+      "subcategory": "war",
+      "description": "Active military conflict",
+      "weight": -0.2,
+      "confidence": 0.7,
+      "tickers": [],
+      "timestamp": "2026-01-29T13:54:41.481641",
+      "source": "seed",
+      "tags": [
+        "war",
+        "conflict"
+      ],
+      "predicted_impact": -0.2,
+      "actual_impact": null,
+      "resolved": false
+    },
+    {
+      "id": "E00008",
+      "category": "technology",
+      "subcategory": "ai",
+      "description": "AI adoption acceleration",
+      "weight": 0.5,
+      "confidence": 0.7,
+      "tickers": [
+        "NVDA",
+        "MSFT",
+        "GOOGL"
+      ],
+      "timestamp": "2026-01-29T13:54:41.481861",
+      "source": "seed",
+      "tags": [
+        "ai",
+        "llm"
+      ],
+      "predicted_impact": 0.5,
+      "actual_impact": null,
+      "resolved": false
+    },
+    {
+      "id": "E00009",
+      "category": "sector",
+      "subcategory": "semiconductors",
+      "description": "Chip shortage",
+      "weight": 0.3,
+      "confidence": 0.7,
+      "tickers": [
+        "NVDA",
+        "AMD",
+        "TSM",
+        "INTC"
+      ],
+      "timestamp": "2026-01-29T13:54:41.482016",
+      "source": "seed",
+      "tags": [
+        "chips",
+        "supply"
+      ],
+      "predicted_impact": 0.3,
+      "actual_impact": null,
+      "resolved": false
+    }
+  ]
+}

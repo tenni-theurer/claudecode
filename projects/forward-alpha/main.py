@@ -5,10 +5,12 @@ Autonomous equity analysis using multi-LLM consensus (Claude, GPT-4, Gemini, Gro
 
 Usage:
     # Collision Analysis (primary feature)
-    python main.py collision NVDA                    # Initial probability estimate
-    python main.py collision NVDA "event 1" "event 2"  # Inject events, see deltas
-    python main.py collision-news AAPL               # Auto-inject recent news
-    python main.py news AAPL                         # View news as injection candidates
+    python main.py collision NVDA                       # Initial probability estimate
+    python main.py collision NVDA "event 1" "event 2"   # Inject events, see deltas
+    python main.py collision NVDA --horizon 30d         # Custom horizon (30 days)
+    python main.py collision NVDA --horizon earnings    # Force earnings horizon
+    python main.py collision-news AAPL                  # Auto-inject recent news
+    python main.py news AAPL                            # View news as injection candidates
 
     # Other commands
     python main.py analyze NVDA          # Full analysis of a ticker
@@ -613,13 +615,64 @@ def cmd_jump():
         print(f"   Reason: {s['reason']}")
 
 
+def parse_horizon(args: tuple, earnings_info: dict) -> tuple[str, list]:
+    """
+    Parse horizon from arguments and return (horizon_string, remaining_events)
+
+    Supports:
+        --horizon earnings   (default if earnings date exists)
+        --horizon 30d        (30 days)
+        --horizon 60d        (60 days)
+        --horizon 90d        (90 days / 3 months)
+    """
+    events = list(args)
+    horizon = None
+
+    # Check for --horizon flag
+    for i, arg in enumerate(events):
+        if arg == "--horizon" and i + 1 < len(events):
+            horizon_arg = events[i + 1].lower()
+            events = events[:i] + events[i+2:]  # Remove --horizon and value
+
+            if horizon_arg == "earnings":
+                days = earnings_info.get("days_to_earnings")
+                if days and days > 0:
+                    horizon = f"by earnings date ({days} days)"
+                else:
+                    horizon = "by next earnings (~90 days)"
+            elif horizon_arg.endswith("d"):
+                days = int(horizon_arg[:-1])
+                horizon = f"over next {days} days"
+            elif horizon_arg.endswith("m"):
+                months = int(horizon_arg[:-1])
+                horizon = f"over next {months} months"
+            else:
+                horizon = f"over next {horizon_arg}"
+            break
+
+    # Smart default if no --horizon specified
+    if horizon is None:
+        days = earnings_info.get("days_to_earnings")
+        if days and days > 0:
+            horizon = f"by earnings date ({days} days)"
+        elif days and days <= 0:
+            # Earnings just passed - estimate next quarter
+            horizon = "by next earnings (~90 days)"
+        else:
+            horizon = "over next 3 months"
+
+    return horizon, events
+
+
 def cmd_collision(ticker: str, *new_events):
     """
     Interactive collision analysis - inject events and see probability changes
 
     Usage:
         python main.py collision NVDA
-        python main.py collision NVDA "China approves only 33% of H200 sales" "TSMC Arizona producing Blackwell"
+        python main.py collision NVDA "event 1" "event 2"
+        python main.py collision NVDA --horizon 30d "event"
+        python main.py collision NVDA --horizon earnings
     """
     print_header(f"COLLISION ANALYSIS: {ticker}")
     check_api_keys()
@@ -633,9 +686,10 @@ def cmd_collision(ticker: str, *new_events):
     earnings = data.get("earnings", {})
     if earnings.get("days_to_earnings"):
         print(f"Days to Earnings: {earnings['days_to_earnings']}")
-        horizon = "by earnings date"
-    else:
-        horizon = "over next 3 months"
+
+    # Parse horizon and get remaining events
+    horizon, events = parse_horizon(new_events, earnings)
+    print(f"Horizon: {horizon}")
 
     # Initialize collision engine
     engine = CollisionEngine()
@@ -671,10 +725,10 @@ def cmd_collision(ticker: str, *new_events):
     if initial.reasoning:
         print(f"\nReasoning:\n{initial.reasoning[:800]}...")
 
-    # If new events provided, inject and recalculate
-    if new_events:
+    # If events provided, inject and recalculate
+    if events:
         print_section("Injecting New Data")
-        for event in new_events:
+        for event in events:
             injected = engine.inject_event(event)
             print(f"  + [{injected['id']}] {event}")
 

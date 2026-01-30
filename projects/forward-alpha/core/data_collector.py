@@ -93,17 +93,20 @@ def _calculate_price_position(info: dict, hist) -> dict:
 
 
 def _get_earnings_info(stock) -> dict:
-    """Get earnings calendar info"""
+    """Get earnings calendar info - always returns NEXT upcoming earnings"""
+    from datetime import date, timedelta
+
     try:
         calendar = stock.calendar
         earnings_date = None
+        all_earnings_dates = []
 
         if calendar is not None:
             # Handle dict format (new yfinance)
             if isinstance(calendar, dict):
-                earnings_dates = calendar.get("Earnings Date", [])
-                if earnings_dates and len(earnings_dates) > 0:
-                    earnings_date = earnings_dates[0]
+                all_earnings_dates = calendar.get("Earnings Date", [])
+                if all_earnings_dates and len(all_earnings_dates) > 0:
+                    earnings_date = all_earnings_dates[0]
             # Handle DataFrame format (old yfinance)
             elif hasattr(calendar, 'empty') and not calendar.empty:
                 earnings_date = calendar.iloc[0].get("Earnings Date") if len(calendar) > 0 else None
@@ -113,16 +116,40 @@ def _get_earnings_info(stock) -> dict:
 
     # Calculate days to earnings
     days_to_earnings = None
+    today = datetime.now().date()
+
     if earnings_date:
         try:
-            from datetime import date
-            if isinstance(earnings_date, date):
-                days_to_earnings = (earnings_date - datetime.now().date()).days
-            elif isinstance(earnings_date, datetime):
-                days_to_earnings = (earnings_date - datetime.now()).days
+            # Normalize earnings_date to date object
+            if isinstance(earnings_date, datetime):
+                ed = earnings_date.date()
+            elif isinstance(earnings_date, date):
+                ed = earnings_date
             elif isinstance(earnings_date, str):
-                ed = datetime.fromisoformat(earnings_date)
-                days_to_earnings = (ed - datetime.now()).days
+                ed = datetime.fromisoformat(earnings_date).date()
+            else:
+                ed = None
+
+            if ed:
+                days_to_earnings = (ed - today).days
+
+                # If earnings just passed (negative days), estimate next quarter
+                if days_to_earnings < 0:
+                    # Check if there's a second date in the calendar
+                    if len(all_earnings_dates) > 1:
+                        next_ed = all_earnings_dates[1]
+                        if isinstance(next_ed, datetime):
+                            next_ed = next_ed.date()
+                        elif isinstance(next_ed, str):
+                            next_ed = datetime.fromisoformat(next_ed).date()
+                        earnings_date = next_ed
+                        days_to_earnings = (next_ed - today).days
+                    else:
+                        # Estimate ~90 days to next quarter
+                        estimated_next = ed + timedelta(days=90)
+                        earnings_date = estimated_next
+                        days_to_earnings = (estimated_next - today).days
+
         except Exception as e:
             print(f"Warning: Could not calculate days to earnings: {e}")
             pass

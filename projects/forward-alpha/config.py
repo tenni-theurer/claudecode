@@ -32,7 +32,7 @@ MODELS = {
     "claude": "claude-sonnet-4-20250514",
     "gpt": "gpt-4o",
     "gemini": "gemini-2.0-flash",
-    "grok": "grok-2-latest",
+    "grok": "grok-3",
 }
 
 # Multi-LLM Debate Settings

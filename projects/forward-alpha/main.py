@@ -725,7 +725,169 @@ def cmd_collision(ticker: str, *new_events):
         print("\n" + "="*50)
         print("To inject new data and recalculate, run:")
         print(f'  python3 main.py collision {ticker} "your new data point"')
+        print(f'  python3 main.py news {ticker}  # Get recent news as injection candidates')
         print("="*50)
+
+
+def cmd_news(ticker: str):
+    """
+    Collect recent news and show as injection candidates
+
+    Usage:
+        python main.py news AAPL
+    """
+    from data.news_collector import collect_injection_candidates
+    from core.data_collector import collect_stock_data
+
+    print_header(f"NEWS INJECTION CANDIDATES: {ticker}")
+
+    # Get company name
+    data = collect_stock_data(ticker)
+    company_name = data.get("name", ticker)
+
+    print(f"Collecting recent news for {company_name}...\n")
+
+    candidates = collect_injection_candidates(ticker, company_name)
+
+    if not candidates:
+        print("No recent news found.")
+        print("\nTip: Set NEWS_API_KEY in .env for more news sources.")
+        return
+
+    print(f"Found {len(candidates)} recent news items:\n")
+    for i, c in enumerate(candidates, 1):
+        print(f"  {i}. {c}")
+
+    print("\n" + "="*60)
+    print("To inject these into collision analysis, copy the headlines:")
+    print(f'  python3 main.py collision {ticker} "headline 1" "headline 2"')
+    print("="*60)
+
+    return candidates
+
+
+def cmd_collision_with_news(ticker: str):
+    """
+    Run collision analysis then offer to inject recent news
+
+    Usage:
+        python main.py collision-news AAPL
+    """
+    from data.news_collector import collect_injection_candidates
+    from core.data_collector import collect_stock_data
+
+    print_header(f"COLLISION ANALYSIS WITH NEWS: {ticker}")
+    check_api_keys()
+
+    # Collect stock data
+    print_section("Collecting Stock Data")
+    data = collect_stock_data(ticker)
+    company_name = data.get("name", ticker)
+    print(f"Company: {company_name}")
+    print(f"Price: ${data['financials'].get('price') or 'N/A'}")
+
+    earnings = data.get("earnings", {})
+    if earnings.get("days_to_earnings"):
+        print(f"Days to Earnings: {earnings['days_to_earnings']}")
+        horizon = "by earnings date"
+    else:
+        horizon = "over next 3 months"
+
+    # Initialize collision engine
+    engine = CollisionEngine()
+    engine.initialize(ticker, data, horizon)
+
+    # Get initial estimate
+    print_section("Initial Probability Estimate")
+    print(f"(Modeling {ticker} as a ball, identifying collision factors...)")
+
+    initial = engine.get_initial_estimate(horizon)
+
+    # Show individual LLM estimates
+    individual = engine.get_individual_estimates()
+    if individual:
+        print(f"\nINDIVIDUAL LLM ESTIMATES ({horizon}):")
+        print("-" * 60)
+        print(f"{'LLM':<10} {'P(+5%)':<10} {'P(+10%)':<10} {'P(-5%)':<10} {'P(-10%)':<10}")
+        print("-" * 60)
+        for provider, est in individual.items():
+            if "error" in est:
+                print(f"{provider.upper():<10} {'[' + est['error'][:30] + ']':<40}")
+            else:
+                print(f"{provider.upper():<10} {est['p_up_5']*100:>6.0f}%   {est['p_up_10']*100:>6.0f}%    {est['p_down_5']*100:>6.0f}%    {est['p_down_10']*100:>6.0f}%")
+        print("-" * 60)
+
+    print(f"\nCONSENSUS ESTIMATE ({horizon}):")
+    print(f"  P(+5% or more):  {initial.p_up_5*100:.0f}%")
+    print(f"  P(+10% or more): {initial.p_up_10*100:.0f}%")
+    print(f"  P(-5% or more):  {initial.p_down_5*100:.0f}%")
+    print(f"  P(-10% or more): {initial.p_down_10*100:.0f}%")
+
+    # Collect news
+    print_section("Collecting Recent News")
+    candidates = collect_injection_candidates(ticker, company_name)
+
+    if candidates:
+        print(f"Found {len(candidates)} recent news items:\n")
+        for i, c in enumerate(candidates[:10], 1):  # Show top 10
+            print(f"  {i}. {c}")
+
+        if len(candidates) > 10:
+            print(f"  ... and {len(candidates) - 10} more")
+
+        # Inject all news and recalculate
+        print_section("Injecting All News")
+        for c in candidates[:10]:  # Inject top 10
+            engine.inject_event(c)
+            print(f"  + {c[:60]}...")
+
+        print_section("Recalculating Probabilities")
+        print("(Analyzing how news changes collision dynamics...)")
+
+        result = engine.recalculate()
+        new_state = result["new_state"]
+        deltas = result["deltas"]
+
+        # Show revised estimates
+        individual = engine.get_individual_estimates()
+        if individual:
+            print(f"\nINDIVIDUAL LLM REVISED ESTIMATES:")
+            print("-" * 60)
+            print(f"{'LLM':<10} {'P(+5%)':<10} {'P(+10%)':<10} {'P(-5%)':<10} {'P(-10%)':<10}")
+            print("-" * 60)
+            for provider, est in individual.items():
+                if "error" in est:
+                    print(f"{provider.upper():<10} {'[' + est['error'][:30] + ']':<40}")
+                else:
+                    print(f"{provider.upper():<10} {est['p_up_5']*100:>6.0f}%   {est['p_up_10']*100:>6.0f}%    {est['p_down_5']*100:>6.0f}%    {est['p_down_10']*100:>6.0f}%")
+            print("-" * 60)
+
+        print(f"\nCONSENSUS REVISED ESTIMATES:")
+        print(f"  P(+5% or more):  {new_state.p_up_5*100:.0f}% ({deltas['p_up_5']:+.1f} pp)")
+        print(f"  P(+10% or more): {new_state.p_up_10*100:.0f}% ({deltas['p_up_10']:+.1f} pp)")
+        print(f"  P(-5% or more):  {new_state.p_down_5*100:.0f}% ({deltas['p_down_5']:+.1f} pp)")
+        print(f"  P(-10% or more): {new_state.p_down_10*100:.0f}% ({deltas['p_down_10']:+.1f} pp)")
+
+        # Net effect
+        net_shift = deltas["p_up_10"] - deltas["p_down_10"]
+        if net_shift > 5:
+            print(f"\n>>> NET EFFECT: BULLISH (+{net_shift:.1f}% shift toward upside)")
+        elif net_shift < -5:
+            print(f"\n>>> NET EFFECT: BEARISH ({net_shift:.1f}% shift toward downside)")
+        else:
+            print(f"\n>>> NET EFFECT: NEUTRAL ({net_shift:+.1f}% shift)")
+
+        print(f"\n{result['analysis']}")
+
+    else:
+        print("No recent news found.")
+        print("Tip: Set NEWS_API_KEY in .env for more news sources.")
+
+    # Save session
+    session_path = engine.save_session()
+    md_path = engine.save_markdown_report()
+    print(f"\nSession saved: {session_path}")
+    print(f"Full report: {md_path}")
 
 
 def main():
@@ -750,6 +912,10 @@ def main():
         cmd_jump()
     elif command == "collision" and len(sys.argv) >= 3:
         cmd_collision(sys.argv[2].upper(), *sys.argv[3:])
+    elif command == "news" and len(sys.argv) >= 3:
+        cmd_news(sys.argv[2].upper())
+    elif command == "collision-news" and len(sys.argv) >= 3:
+        cmd_collision_with_news(sys.argv[2].upper())
     else:
         print(__doc__)
 

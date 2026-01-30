@@ -9,7 +9,7 @@ from typing import Optional
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from config import (
-    ANTHROPIC_API_KEY, OPENAI_API_KEY, GOOGLE_API_KEY,
+    ANTHROPIC_API_KEY, OPENAI_API_KEY, GOOGLE_API_KEY, XAI_API_KEY,
     MODELS, cost_tracker
 )
 
@@ -31,6 +31,9 @@ class MultiLLM:
         if GOOGLE_API_KEY:
             self.clients["gemini"] = genai.Client(api_key=GOOGLE_API_KEY)
 
+        if XAI_API_KEY:
+            self.clients["grok"] = OpenAI(api_key=XAI_API_KEY, base_url="https://api.x.ai/v1")
+
     def query_all(self, prompt: str, system: str = None) -> dict:
         """
         Query all available LLMs with the same prompt
@@ -40,7 +43,7 @@ class MultiLLM:
         results = {}
 
         # Use ThreadPoolExecutor for parallel queries
-        with ThreadPoolExecutor(max_workers=3) as executor:
+        with ThreadPoolExecutor(max_workers=4) as executor:
             futures = {}
 
             if "claude" in self.clients:
@@ -51,6 +54,9 @@ class MultiLLM:
 
             if "gemini" in self.clients:
                 futures[executor.submit(self._query_gemini, prompt, system)] = "gemini"
+
+            if "grok" in self.clients:
+                futures[executor.submit(self._query_grok, prompt, system)] = "grok"
 
             for future in as_completed(futures):
                 provider = futures[future]
@@ -69,6 +75,8 @@ class MultiLLM:
             return self._query_gpt(prompt, system)
         elif provider == "gemini":
             return self._query_gemini(prompt, system)
+        elif provider == "grok":
+            return self._query_grok(prompt, system)
         else:
             return {"error": f"Unknown provider: {provider}", "response": None}
 
@@ -150,6 +158,36 @@ class MultiLLM:
             return {
                 "response": response.text,
                 "tokens": {"input": 0, "output": 0},
+                "cost": cost,
+            }
+
+        except Exception as e:
+            return {"error": str(e), "response": None}
+
+    def _query_grok(self, prompt: str, system: str = None) -> dict:
+        """Query Grok (xAI) - uses OpenAI-compatible API"""
+        try:
+            messages = []
+            if system:
+                messages.append({"role": "system", "content": system})
+            messages.append({"role": "user", "content": prompt})
+
+            response = self.clients["grok"].chat.completions.create(
+                model=MODELS["grok"],
+                messages=messages,
+                max_tokens=4000,
+            )
+
+            # Track cost (approximate for Grok-2)
+            cost = (response.usage.prompt_tokens * 2 + response.usage.completion_tokens * 10) / 1_000_000
+            cost_tracker.add("grok", cost)
+
+            return {
+                "response": response.choices[0].message.content,
+                "tokens": {
+                    "input": response.usage.prompt_tokens,
+                    "output": response.usage.completion_tokens,
+                },
                 "cost": cost,
             }
 

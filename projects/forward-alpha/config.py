@@ -25,12 +25,14 @@ for d in [DATA_DIR, REPORTS_DIR, EVENTS_DIR, CACHE_DIR]:
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY", "")
+XAI_API_KEY = os.getenv("XAI_API_KEY", "")
 
 # LLM Models
 MODELS = {
     "claude": "claude-sonnet-4-20250514",
     "gpt": "gpt-4o",
     "gemini": "gemini-2.0-flash",
+    "grok": "grok-2-latest",
 }
 
 # Multi-LLM Debate Settings
@@ -86,8 +88,8 @@ class CostTracker:
     """Track API costs across all LLMs"""
 
     def __init__(self):
-        self.costs = {"claude": 0.0, "gpt": 0.0, "gemini": 0.0}
-        self.calls = {"claude": 0, "gpt": 0, "gemini": 0}
+        self.costs = {"claude": 0.0, "gpt": 0.0, "gemini": 0.0, "grok": 0.0}
+        self.calls = {"claude": 0, "gpt": 0, "gemini": 0, "grok": 0}
 
     def add(self, provider: str, cost: float):
         self.costs[provider] = self.costs.get(provider, 0) + cost

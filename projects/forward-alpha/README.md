@@ -1,6 +1,6 @@
 # Forward Alpha v2
 
-Autonomous equity analysis system using **Multi-Events Collision Theory** with multi-LLM consensus (Claude, GPT-4, Gemini).
+Autonomous equity analysis system using **Multi-Events Collision Theory** with multi-LLM consensus (Claude, GPT-4, Gemini, Grok).
 
 ## What is Multi-Events Collision Theory?
 
@@ -146,9 +146,10 @@ Edit `.env`:
 ANTHROPIC_API_KEY=sk-ant-...    # Claude
 OPENAI_API_KEY=sk-proj-...      # GPT-4
 GOOGLE_API_KEY=AIzaSy...        # Gemini
+XAI_API_KEY=xai-...             # Grok
 ```
 
-You need at least one LLM key. For best results, use all three for consensus.
+You need at least one LLM key. For best results, use all four for consensus.
 
 ### 3. Run
 
@@ -193,6 +194,7 @@ Each LLM has different "personalities":
 | **Gemini** | Most reactive to news | Quantitative, uses specific velocity/mass values |
 | **GPT-4** | Most bullish baseline | Narrative, balanced |
 | **Claude** | Most conservative | Emphasizes downside risk, detailed collision math |
+| **Grok** | Contrarian, direct | Unfiltered analysis, challenges consensus |
 
 Consensus averaging reduces individual model bias.
 

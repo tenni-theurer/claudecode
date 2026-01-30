@@ -1,12 +1,19 @@
 #!/usr/bin/env python3
 """
 Forward Alpha v2 - Multi-Events Collisions Engine
-Autonomous equity analysis using multi-LLM consensus
+Autonomous equity analysis using multi-LLM consensus (Claude, GPT-4, Gemini, Grok)
 
 Usage:
+    # Collision Analysis (primary feature)
+    python main.py collision NVDA                    # Initial probability estimate
+    python main.py collision NVDA "event 1" "event 2"  # Inject events, see deltas
+    python main.py collision-news AAPL               # Auto-inject recent news
+    python main.py news AAPL                         # View news as injection candidates
+
+    # Other commands
     python main.py analyze NVDA          # Full analysis of a ticker
-    python main.py gate                  # Check index gate
-    python main.py roller NVDA TSM AAPL  # Roller coaster analysis
+    python main.py gate                  # Check index gate (market conditions)
+    python main.py roller NVDA TSM AAPL  # Roller coaster - find peaks/bottoms
     python main.py events                # Show active events
     python main.py portfolio             # Show portfolio status
     python main.py jump                  # Get jump suggestions
